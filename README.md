@@ -2,6 +2,8 @@
 
 Influencer search and shortlisting application built with React, TypeScript, Vite, Tailwind CSS, and Zustand.
 
+**Live:** [wobb-assignment-five.vercel.app](https://wobb-assignment-five.vercel.app)
+
 ## Quick Start
 
 ```bash

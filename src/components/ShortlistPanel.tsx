@@ -15,21 +15,21 @@ export function ShortlistPanel() {
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/20 z-40 lg:hidden"
+        className="fixed inset-0 bg-black/20 dark:bg-black/60 z-40 lg:hidden"
         onClick={() => setShortlistOpen(false)}
       />
-      <div className="fixed right-0 top-0 h-full w-80 max-w-[85vw] bg-white border-l border-slate-200 z-50 flex flex-col shadow-xl animate-slide-in">
-        <div className="flex items-center justify-between p-4 border-b border-slate-200">
+      <div className="fixed right-0 top-0 h-full w-80 max-w-[85vw] bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 z-50 flex flex-col shadow-xl animate-slide-in">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
           <div>
-            <h3 className="font-semibold text-slate-900">Shortlist</h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <h3 className="font-semibold text-slate-900 dark:text-white">Shortlist</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {shortlisted.length} profile{shortlisted.length !== 1 ? "s" : ""}{" "}
               selected
             </p>
           </div>
           <button
             onClick={() => setShortlistOpen(false)}
-            className="p-1 rounded-lg hover:bg-slate-100 text-slate-400"
+            className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 dark:text-slate-500"
             aria-label="Close shortlist"
           >
             <X className="w-5 h-5" />
@@ -37,7 +37,7 @@ export function ShortlistPanel() {
         </div>
 
         {shortlisted.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-6 text-slate-400">
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-slate-400 dark:text-slate-500">
             <User className="w-10 h-10 mb-2 opacity-50" />
             <p className="text-sm font-medium">No profiles shortlisted</p>
             <p className="text-xs mt-1 text-center">
@@ -50,7 +50,7 @@ export function ShortlistPanel() {
               {shortlisted.map((profile) => (
                 <div
                   key={profile.user_id}
-                  className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+                  className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                   onClick={() => {
                     navigate(
                       `/profile/${profile.username}?platform=instagram`
@@ -76,10 +76,10 @@ export function ShortlistPanel() {
                     }}
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-slate-900 truncate">
+                    <div className="text-sm font-medium text-slate-900 dark:text-white truncate">
                       @{profile.username}
                     </div>
-                    <div className="text-xs text-slate-500 truncate">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
                       {profile.fullname}
                     </div>
                   </div>
@@ -88,7 +88,7 @@ export function ShortlistPanel() {
                       e.stopPropagation();
                       removeFromShortlist(profile.user_id);
                     }}
-                    className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+                    className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                     aria-label={`Remove ${profile.username}`}
                   >
                     <X className="w-4 h-4" />
@@ -97,10 +97,10 @@ export function ShortlistPanel() {
               ))}
             </div>
 
-            <div className="p-3 border-t border-slate-200">
+            <div className="p-3 border-t border-slate-200 dark:border-slate-700">
               <button
                 onClick={clearShortlist}
-                className="flex items-center justify-center gap-2 w-full py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="flex items-center justify-center gap-2 w-full py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
                 Clear all

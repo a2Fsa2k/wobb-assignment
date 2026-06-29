@@ -27,10 +27,10 @@ export function SearchPage() {
     <Layout title="Find Influencers">
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
             Find Influencers
           </h1>
-          <p className="text-slate-500 mt-1">
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
             Browse top creators across social platforms
           </p>
         </div>
@@ -40,17 +40,17 @@ export function SearchPage() {
           <SearchInput value={searchQuery} onChange={setSearchQuery} />
         </div>
 
-        <div className="text-sm text-slate-500">
+        <div className="text-sm text-slate-500 dark:text-slate-400">
           Showing{" "}
-          <span className="font-semibold text-slate-900">
+          <span className="font-semibold text-slate-900 dark:text-white">
             {filtered.length}
           </span>{" "}
           of{" "}
-          <span className="font-semibold text-slate-900">
+          <span className="font-semibold text-slate-900 dark:text-white">
             {allProfiles.length}
           </span>{" "}
           profiles on{" "}
-          <span className="font-semibold text-slate-900 capitalize">
+          <span className="font-semibold text-slate-900 dark:text-white capitalize">
             {platform}
           </span>
         </div>

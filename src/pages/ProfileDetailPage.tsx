@@ -4,6 +4,7 @@ import { Layout } from "@/components/Layout";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { ShortlistPanel } from "@/components/ShortlistPanel";
 import { useShortlistStore } from "@/store/shortlistStore";
+import { useToastStore } from "@/store/toastStore";
 import type { FullUserProfile, ProfileDetailResponse } from "@/types";
 import { loadProfileByUsername } from "@/utils/profileLoader";
 import { ArrowLeft, Plus, Check, ExternalLink } from "lucide-react";
@@ -25,6 +26,7 @@ export function ProfileDetailPage() {
 
   const { addToShortlist, removeFromShortlist, isShortlisted } =
     useShortlistStore();
+  const showToast = useToastStore((s) => s.show);
 
   useEffect(() => {
     if (!username) return;
@@ -51,6 +53,7 @@ export function ProfileDetailPage() {
     if (!user) return;
     if (shortlisted) {
       removeFromShortlist(user.user_id);
+      showToast(`Removed @${user.username} from shortlist`);
     } else {
       addToShortlist({
         user_id: user.user_id,
@@ -63,17 +66,20 @@ export function ProfileDetailPage() {
         engagements: user.engagements,
         engagement_rate: user.engagement_rate,
       });
+      showToast(`Added @${user.username} to shortlist`);
     }
-  }, [user, shortlisted, addToShortlist, removeFromShortlist]);
+  }, [user, shortlisted, addToShortlist, removeFromShortlist, showToast]);
 
   if (!username) {
     return (
       <Layout>
         <div className="text-center py-16">
-          <p className="text-slate-600 text-lg">Invalid profile</p>
+          <p className="text-slate-600 dark:text-slate-400 text-lg">
+            Invalid profile
+          </p>
           <Link
             to="/"
-            className="inline-flex items-center gap-1 mt-3 text-indigo-600 hover:text-indigo-700 font-medium text-sm"
+            className="inline-flex items-center gap-1 mt-3 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium text-sm"
           >
             <ArrowLeft className="w-4 h-4" /> Back to search
           </Link>
@@ -87,7 +93,9 @@ export function ProfileDetailPage() {
       <Layout title={`@${username}`}>
         <div className="flex items-center justify-center py-20">
           <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-          <span className="ml-3 text-slate-500">Loading profile...</span>
+          <span className="ml-3 text-slate-500 dark:text-slate-400">
+            Loading profile...
+          </span>
         </div>
       </Layout>
     );
@@ -97,12 +105,12 @@ export function ProfileDetailPage() {
     return (
       <Layout title={`@${username}`}>
         <div className="text-center py-16">
-          <p className="text-red-600 font-medium">
+          <p className="text-red-600 dark:text-red-400 font-medium">
             Could not load profile details for @{username}
           </p>
           <Link
             to="/"
-            className="inline-flex items-center gap-1 mt-3 text-indigo-600 hover:text-indigo-700 font-medium text-sm"
+            className="inline-flex items-center gap-1 mt-3 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium text-sm"
           >
             <ArrowLeft className="w-4 h-4" /> Back to search
           </Link>
@@ -125,30 +133,30 @@ export function ProfileDetailPage() {
       : []),
     ...(user.avg_likes !== undefined
       ? [
-        {
-          label: "Avg Likes",
-          value: formatFollowersDetail(user.avg_likes),
-        },
-      ]
+          {
+            label: "Avg Likes",
+            value: formatFollowersDetail(user.avg_likes),
+          },
+        ]
       : []),
     ...(user.avg_comments !== undefined
       ? [{ label: "Avg Comments", value: String(user.avg_comments) }]
       : []),
     ...(user.avg_views !== undefined && user.avg_views > 0
       ? [
-        {
-          label: "Avg Views",
-          value: formatFollowersDetail(user.avg_views),
-        },
-      ]
+          {
+            label: "Avg Views",
+            value: formatFollowersDetail(user.avg_views),
+          },
+        ]
       : []),
     ...(user.engagements !== undefined
       ? [
-        {
-          label: "Engagements",
-          value: formatFollowersDetail(user.engagements),
-        },
-      ]
+          {
+            label: "Engagements",
+            value: formatFollowersDetail(user.engagements),
+          },
+        ]
       : []),
   ];
 
@@ -157,17 +165,17 @@ export function ProfileDetailPage() {
       <div className="max-w-2xl mx-auto">
         <Link
           to="/"
-          className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-indigo-600 transition-colors mb-6"
+          className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" /> Back to search
         </Link>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
           <div className="flex items-start gap-5">
             <img
               src={user.picture}
               alt={user.username}
-              className="w-20 h-20 rounded-full object-cover ring-4 ring-slate-50 bg-slate-200"
+              className="w-20 h-20 rounded-full object-cover ring-4 ring-slate-50 dark:ring-slate-700 bg-slate-200"
               onError={(e) => {
                 (e.target as HTMLImageElement).src =
                   `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect fill="#e2e8f0" width="80" height="80"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="#94a3b8" font-size="32" font-family="system-ui">${(user.username || "?")[0].toUpperCase()}</text></svg>`)}`;
@@ -175,18 +183,20 @@ export function ProfileDetailPage() {
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-bold text-slate-900">
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
                   @{user.username}
                 </h1>
                 <VerifiedBadge verified={user.is_verified} />
               </div>
-              <p className="text-slate-600 mt-0.5">{user.fullname}</p>
-              <p className="text-xs text-slate-400 mt-1 capitalize">
+              <p className="text-slate-600 dark:text-slate-400 mt-0.5">
+                {user.fullname}
+              </p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 capitalize">
                 {platform}
               </p>
 
               {user.description && (
-                <p className="mt-3 text-sm text-slate-600 leading-relaxed">
+                <p className="mt-3 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                   {user.description}
                 </p>
               )}
@@ -196,7 +206,7 @@ export function ProfileDetailPage() {
                   onClick={handleToggleShortlist}
                   className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all ${
                     shortlisted
-                      ? "bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100"
+                      ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
                       : "bg-indigo-600 text-white hover:bg-indigo-700"
                   }`}
                 >
@@ -216,7 +226,7 @@ export function ProfileDetailPage() {
                     href={user.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                   >
                     <ExternalLink className="w-4 h-4" />
                     View Profile
@@ -230,12 +240,12 @@ export function ProfileDetailPage() {
             {statCards.map((stat) => (
               <div
                 key={stat.label}
-                className="bg-slate-50 rounded-xl p-4 text-center"
+                className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 text-center"
               >
-                <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">
+                <div className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">
                   {stat.label}
                 </div>
-                <div className="text-lg font-bold text-slate-900 mt-1">
+                <div className="text-lg font-bold text-slate-900 dark:text-white mt-1">
                   {stat.value}
                 </div>
               </div>

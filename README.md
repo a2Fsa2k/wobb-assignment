@@ -1,80 +1,120 @@
-# Wobb Frontend Assignment
+# Wobb — Vibe Coder Intern Assignment
 
-A starter influencer search application built with **React**, **TypeScript**, **Vite**, and **Tailwind CSS**. This project is intentionally left in a rough-but-working state for candidates to improve.
+Influencer search and shortlisting application built with React, TypeScript, Vite, Tailwind CSS, and Zustand.
 
-## Getting Started
+## Quick Start
 
 ```bash
-npm install
-npm run dev
+npm install --legacy-peer-deps
+npm run dev        # http://localhost:5173
+npm run build      # production build
+npm run lint       # ESLint
 ```
 
-Open [http://localhost:5173](http://localhost:5173) to view the app.
+> `--legacy-peer-deps` is needed because `react-beautiful-dnd` (was in the starter) had a peer conflict with React 19. I removed it; the flag is no longer needed after a clean install.
 
-## What's Included
+---
 
-- **Search / Dashboard** — filter influencers by platform (Instagram, YouTube, TikTok) and search by username or full name
-- **Profile Details** — click a profile to view extended data loaded from individual JSON files
-- **Routing** — `react-router-dom` with `/` (search) and `/profile/:username` (details)
+## What I Changed
 
-Sample data lives in:
+### 1. Bugs Fixed
 
-- `src/assets/data/search/` — platform search results (10 profiles each)
-- `src/assets/data/profiles/` — detailed profile JSON per username
+| Bug | Fix |
+|---|---|
+| **Case-sensitive username search** — `p.username.includes(query)` was case-sensitive while fullname was case-insensitive | Normalize both username and fullname to lowercase in `filterProfiles` |
+| **Wrong engagement value displayed** — `ProfileDetailPage` used `formatEngagementRate()` to display the engagements count stat | Display actual engagements count with `formatFollowersDetail()` |
+| **Race condition in profile detail** — `loaded` state wasn't reset when navigating between profiles, causing stale data flash | Reset state on username change; added cleanup flag to ignore stale async responses |
+| **Dead `SearchBar` component** — existed but never imported; `PlatformFilter` had its own search input | Removed; split into `PlatformFilter` (tabs only) + `SearchInput` (standalone) |
+| **Debug `clickCount` state** — tracked clicks in `SearchPage` with no functional purpose | Removed; state management moved to Zustand store |
+| **Unused `react-beautiful-dnd`** — installed but never used, and deprecated for React 19 | Removed from dependencies |
 
-## How to Submit
+### 2. UI/UX Redesign
 
-1. **Download or clone** this starter project to your machine.
-2. **Create a new repository** on your own GitHub account. Do not fork the original assignment repo — push your work to a repo you own.
-3. Complete the tasks below and push your changes to that repository.
-4. **Share the public GitHub repository URL** with us as your submission.
+- **Design system**: Clean slate-50 background, white cards, indigo accent color, consistent rounded corners and shadows
+- **Platform badges**: Color-coded pills per platform (pink/Instagram, red/YouTube, cyan/TikTok)
+- **Sticky header**: Backdrop-blurred header with shortlist counter badge
+- **Profile cards**: Full-width cards with hover states, accessible keyboard navigation, loading states
+- **Shortlist panel**: Slide-in drawer from the right with per-item remove and "clear all"
+- **Responsive**: Mobile-first with breakpoints for tablet and desktop
+- **Accessibility**: `aria-label` on all interactive elements, `role="button"` with keyboard handlers, semantic HTML, loading spinners for async operations
 
-### Deadline (strict)
+### 3. State Management — Zustand
 
-- **Due:** **2 July 2026, 2:00 PM IST** (Indian Standard Time, UTC+5:30)
-- **Any git commits made after this deadline will disqualify your submission.** We will only consider the repository state as of the deadline; late commits will not be reviewed.
-- Make sure your final work is pushed **before** the cutoff.
+Three Zustand stores replace what would have been React Context:
 
-## AI Usage
+- **`searchStore`** — platform filter + search query
+- **`shortlistStore`** — shortlisted profiles with `zustand/middleware/persist` to `localStorage` (survives page refresh)
+- **`uiStore`** — shortlist panel open/close toggle
 
-You may use any AI tools (Cursor, ChatGPT, Claude, GitHub Copilot, etc.). We are evaluating your final solution and engineering decisions.
+### 4. Add to List Feature
 
-## Your Tasks
+- **Add** profiles from search cards or profile detail page
+- **Remove** individual profiles from the shortlist panel or by clicking "Added" on a card
+- **Prevent duplicates** — store checks `user_id` before adding
+- **Persist** across page refreshes via `localStorage`
+- **View** shortlisted profiles in a slide-out panel (click "Shortlist" in the header)
+- **Clear all** — one-click bulk remove
 
-Complete the following as part of your submission:
+### 5. Code Quality Improvements
 
-1. **Find and fix all bugs and quality issues** — the codebase contains intentional bugs and quality issues. Identify and resolve them.
+- **Folder structure**: `src/store/` for Zustand stores, `src/components/` organized by concern
+- **Separation of concerns**: `PlatformFilter` (tabs only), `SearchInput` (search only), `VerifiedBadge` (reusable), `ShortlistPanel` (self-contained)
+- **Platform config**: Centralized color/label/icon map in `platformConfig.ts` instead of inline switch logic
+- **TypeScript**: All components fully typed; no `any` types; strict `verbatimModuleSyntax` respected
 
-2. **Completely redesign the UI/UX** — replace the basic layout with a polished, modern interface. Focus on usability, visual hierarchy, and delight.
+### 6. Performance Optimizations
 
-3. **Replace React Context with Zustand** — when you implement state management for the selected list, use [Zustand](https://github.com/pmndrs/zustand) instead of React Context.
+- **Code splitting**: `ProfileDetailPage` lazy-loaded with `React.lazy` + `Suspense`
+- **`React.memo`** on `ProfileCard` to skip re-renders when props haven't changed
+- **`useMemo`** on filtered/all profile arrays in `SearchPage`
+- **`useCallback`** on the shortlist toggle handler in `ProfileDetailPage`
+- **`loading="lazy"`** on profile images
 
-4. **Implement "Select profile & Add to List"** — the disabled "Add to List" button is a stub. Build the full feature:
-   - Select / add profiles to a persistent list
-   - View and manage the selected list
-   - Handle duplicates appropriately
+---
 
-5. **Improve code quality and project structure** — refactor as needed, add proper types, and follow React best practices.
+## Libraries Added
 
-6. **Optimize performance** — apply sensible optimizations where appropriate.
+| Library | Purpose |
+|---|---|
+| `zustand` | State management with built-in `persist` middleware for localStorage |
+| `lucide-react` | Tree-shakeable icon library (Search, Plus, Check, X, ArrowLeft, etc.) |
+| `framer-motion` | Animation primitives (installed, available for future micro-interactions) |
 
-7. **Use any libraries you need** — you are not limited to the current stack. Choose tools that help you deliver a great result (UI kits, state managers, testing libraries, etc.).
+## Libraries Removed
 
-## Scripts
+| Library | Reason |
+|---|---|
+| `react-beautiful-dnd` | Deprecated; peer dependency conflict with React 19; never used in the app |
 
-| Command        | Description              |
-| -------------- | ------------------------ |
-| `npm run dev`  | Start development server |
-| `npm run build`| Production build         |
-| `npm run lint` | Run ESLint               |
+---
 
-## Submission Notes
+## Assumptions
 
-- Document any assumptions or trade-offs in your README
-- Ensure `npm run build` passes before submitting
-- Focus on demonstrating your judgment — not every possible feature needs to be built, but the core assignment items should be addressed thoughtfully
-- Double-check that your repo is public (or that we have access) and that the link is included in your submission
-- Please make meaningful commits throughout your work. We may review your commit history.
-- **Bonus:** Deploying the app (e.g. Vercel, Netlify, GitHub Pages) is optional but will be considered a plus — include the live URL in your submission if you do
+- **JSON data is static** — search results and profile details are loaded from bundled JSON files (`import.meta.glob`). No API calls needed.
+- **Single shortlist** — one flat list. No multiple named lists per the assignment scope.
+- **Platform for shortlisted profiles** — when navigating from the shortlist panel, platform defaults to Instagram in the URL since the shortlist doesn't store the originating platform (profiles can exist on multiple platforms, but the detail page only uses platform for display).
+- **Tailwind v4** — the starter uses Tailwind v4 with `@import "tailwindcss"` syntax (CSS-first config, no `tailwind.config.js`).
 
-Good luck!
+---
+
+## Trade-offs
+
+- **No test suite** — prioritizing feature completeness over test coverage within the deadline. Would add Vitest + React Testing Library with more time.
+- **No deployment** — the app runs locally. Deploying to Vercel/Netlify would be straightforward (the build output is a static SPA).
+- **Single shortlist** — the assignment asks for "a selected list"; I implemented one list. Multi-list support would add complexity without clear benefit.
+- **Framer-motion installed but lightly used** — the slide-in animation uses a CSS keyframe instead of framer-motion's `AnimatePresence` to keep the bundle smaller. Framer-motion is available for future polish.
+- **No dark mode toggle** — the redesign uses a light theme. The original had `prefers-color-scheme: dark` support which I replaced rather than extended to save time.
+
+---
+
+## Remaining Improvements (with more time)
+
+- [ ] Add unit tests (Vitest + React Testing Library)
+- [ ] Add end-to-end tests (Playwright)
+- [ ] Deploy to Vercel or Netlify
+- [ ] Add framer-motion micro-interactions (staggered list animations, page transitions)
+- [ ] Add dark mode toggle (not just `prefers-color-scheme`)
+- [ ] Add fuzzy search (Fuse.js) for better profile discovery
+- [ ] Add toast notifications for add/remove actions
+- [ ] Add drag-to-reorder in the shortlist panel
+- [ ] Add empty state illustrations

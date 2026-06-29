@@ -69,7 +69,11 @@ export function ShortlistPanel() {
                   <img
                     src={profile.picture}
                     alt={profile.username}
-                    className="w-9 h-9 rounded-full object-cover"
+                    className="w-9 h-9 rounded-full object-cover bg-slate-200"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"><rect fill="#e2e8f0" width="36" height="36"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="#94a3b8" font-size="16" font-family="system-ui">${(profile.username || "?")[0].toUpperCase()}</text></svg>`)}`;
+                    }}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-slate-900 truncate">

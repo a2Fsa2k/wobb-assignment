@@ -56,8 +56,12 @@ export const ProfileCard = memo(function ProfileCard({
       <img
         src={profile.picture}
         alt={profile.username}
-        className="w-12 h-12 rounded-full object-cover ring-2 ring-slate-100"
+        className="w-12 h-12 rounded-full object-cover ring-2 ring-slate-100 bg-slate-200"
         loading="lazy"
+        onError={(e) => {
+          (e.target as HTMLImageElement).src =
+            `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect fill="#e2e8f0" width="48" height="48"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="#94a3b8" font-size="20" font-family="system-ui">${(profile.username || "?")[0].toUpperCase()}</text></svg>`)}`;
+        }}
       />
       <div className="text-left flex-1 min-w-0">
         <div className="flex items-center gap-1">

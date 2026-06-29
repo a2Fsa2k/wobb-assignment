@@ -167,7 +167,11 @@ export function ProfileDetailPage() {
             <img
               src={user.picture}
               alt={user.username}
-              className="w-20 h-20 rounded-full object-cover ring-4 ring-slate-50"
+              className="w-20 h-20 rounded-full object-cover ring-4 ring-slate-50 bg-slate-200"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src =
+                  `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect fill="#e2e8f0" width="80" height="80"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="#94a3b8" font-size="32" font-family="system-ui">${(user.username || "?")[0].toUpperCase()}</text></svg>`)}`;
+              }}
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">

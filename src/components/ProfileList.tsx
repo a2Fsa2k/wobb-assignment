@@ -4,25 +4,30 @@ import { ProfileCard } from "./ProfileCard";
 interface ProfileListProps {
   profiles: UserProfileSummary[];
   platform: Platform;
-  searchQuery: string;
   onProfileClick: (username: string) => void;
 }
 
 export function ProfileList({
   profiles,
   platform,
-  searchQuery,
   onProfileClick,
 }: ProfileListProps) {
+  if (profiles.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+        <p className="text-lg font-medium">No profiles found</p>
+        <p className="text-sm mt-1">Try adjusting your search or platform filter</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center">
-      {profiles.length === 0 && <p>No profiles found</p>}
+    <div className="flex flex-col gap-2">
       {profiles.map((profile) => (
         <ProfileCard
           key={profile.user_id}
           profile={profile}
           platform={platform}
-          searchQuery={searchQuery}
           onProfileClick={onProfileClick}
         />
       ))}

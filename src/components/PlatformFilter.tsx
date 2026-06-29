@@ -1,42 +1,36 @@
 import type { Platform } from "@/types";
-import { PLATFORMS, getPlatformLabel } from "@/utils/dataHelpers";
+import { PLATFORMS } from "@/utils/dataHelpers";
+import { PLATFORM_CONFIG } from "@/utils/platformConfig";
 
 interface PlatformFilterProps {
   selected: Platform;
   onChange: (platform: Platform) => void;
-  searchQuery: string;
-  onSearchChange: (value: string) => void;
 }
 
-export function PlatformFilter({
-  selected,
-  onChange,
-  searchQuery,
-  onSearchChange,
-}: PlatformFilterProps) {
+export function PlatformFilter({ selected, onChange }: PlatformFilterProps) {
   return (
-    <div className="mb-4">
-      <div className="flex gap-2 justify-center mb-3">
-        {PLATFORMS.map((p) => (
+    <div className="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit" role="tablist">
+      {PLATFORMS.map((p) => {
+        const config = PLATFORM_CONFIG[p];
+        const isActive = selected === p;
+        return (
           <button
             key={p}
             type="button"
+            role="tab"
+            aria-selected={isActive}
             onClick={() => onChange(p)}
-            className={`px-4 py-2 border rounded ${
-              selected === p ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              isActive
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
             }`}
           >
-            {getPlatformLabel(p)}
+            <span className="mr-1.5">{config.icon}</span>
+            {config.label}
           </button>
-        ))}
-      </div>
-      <input
-        type="text"
-        value={searchQuery}
-        onChange={(e) => onSearchChange(e.target.value)}
-        placeholder="Search by username or name..."
-        className="w-full max-w-md border px-3 py-2 rounded"
-      />
+        );
+      })}
     </div>
   );
 }

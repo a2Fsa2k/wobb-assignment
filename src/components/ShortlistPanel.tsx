@@ -1,0 +1,110 @@
+import { useShortlistStore } from "@/store/shortlistStore";
+import { useUIStore } from "@/store/uiStore";
+import { X, Trash2, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+export function ShortlistPanel() {
+  const { shortlisted, removeFromShortlist, clearShortlist } =
+    useShortlistStore();
+  const shortlistOpen = useUIStore((s) => s.shortlistOpen);
+  const setShortlistOpen = useUIStore((s) => s.setShortlistOpen);
+  const navigate = useNavigate();
+
+  if (!shortlistOpen) return null;
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 bg-black/20 z-40 lg:hidden"
+        onClick={() => setShortlistOpen(false)}
+      />
+      <div className="fixed right-0 top-0 h-full w-80 max-w-[85vw] bg-white border-l border-slate-200 z-50 flex flex-col shadow-xl animate-slide-in">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200">
+          <div>
+            <h3 className="font-semibold text-slate-900">Shortlist</h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {shortlisted.length} profile{shortlisted.length !== 1 ? "s" : ""}{" "}
+              selected
+            </p>
+          </div>
+          <button
+            onClick={() => setShortlistOpen(false)}
+            className="p-1 rounded-lg hover:bg-slate-100 text-slate-400"
+            aria-label="Close shortlist"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {shortlisted.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-slate-400">
+            <User className="w-10 h-10 mb-2 opacity-50" />
+            <p className="text-sm font-medium">No profiles shortlisted</p>
+            <p className="text-xs mt-1 text-center">
+              Click "Add" on any profile to start building your list
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {shortlisted.map((profile) => (
+                <div
+                  key={profile.user_id}
+                  className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
+                  onClick={() => {
+                    navigate(
+                      `/profile/${profile.username}?platform=instagram`
+                    );
+                    setShortlistOpen(false);
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter")
+                      navigate(
+                        `/profile/${profile.username}?platform=instagram`
+                      );
+                  }}
+                >
+                  <img
+                    src={profile.picture}
+                    alt={profile.username}
+                    className="w-9 h-9 rounded-full object-cover"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-slate-900 truncate">
+                      @{profile.username}
+                    </div>
+                    <div className="text-xs text-slate-500 truncate">
+                      {profile.fullname}
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFromShortlist(profile.user_id);
+                    }}
+                    className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+                    aria-label={`Remove ${profile.username}`}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-3 border-t border-slate-200">
+              <button
+                onClick={clearShortlist}
+                className="flex items-center justify-center gap-2 w-full py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                Clear all
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
+}

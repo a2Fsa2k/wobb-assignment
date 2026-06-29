@@ -15,7 +15,16 @@ export function getSearchData(platform: Platform): SearchData {
 
 export function extractProfiles(platform: Platform): UserProfileSummary[] {
   const data = getSearchData(platform);
-  return data.accounts.map((item) => item.account.user_profile);
+  return data.accounts.map((item) => {
+    const profile = item.account.user_profile;
+    // Some YouTube accounts use handle/custom_name instead of username
+    if (!profile.username) {
+      const raw = profile as unknown as Record<string, string | undefined>;
+      profile.username =
+        raw.handle || raw.custom_name || profile.user_id;
+    }
+    return profile;
+  });
 }
 
 export function filterProfiles(

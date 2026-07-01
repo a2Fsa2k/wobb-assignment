@@ -32,8 +32,6 @@ export function ProfileDetailPage() {
     if (!username) return;
 
     let cancelled = false;
-    setLoaded(false);
-    setProfileData(null);
 
     loadProfileByUsername(username).then((data) => {
       if (cancelled) return;
@@ -43,6 +41,8 @@ export function ProfileDetailPage() {
 
     return () => {
       cancelled = true;
+      setLoaded(false);
+      setProfileData(null);
     };
   }, [username]);
 

@@ -7,116 +7,107 @@ Influencer search and shortlisting application built with React, TypeScript, Vit
 ## Quick Start
 
 ```bash
-npm install --legacy-peer-deps
+npm install
 npm run dev        # http://localhost:5173
 npm run build      # production build
+npm test           # run tests
 npm run lint       # ESLint
 ```
-
-> `--legacy-peer-deps` is needed because `react-beautiful-dnd` (was in the starter) had a peer conflict with React 19. I removed it; the flag is no longer needed after a clean install.
 
 ---
 
 ## What I Changed
 
-### 1. Bugs Fixed
+### Bugs fixed
 
-| Bug | Fix |
+- **Case-insensitive search** — username filtering was case-sensitive while fullname was case-insensitive. Both now normalize to lowercase.
+- **Engagement stat display** — the profile detail page displayed engagement rate in the engagements count slot. Now shows the actual engagements value.
+- **Race condition on navigation** — `loaded` state wasn't reset when switching between profiles, causing stale data to flash briefly. Added a cleanup flag that ignores responses from stale requests.
+- **Missing usernames in YouTube data** — several YouTube accounts (Vlad and Niki, Kids Diana Show, Like Nastya) only had `handle`/`custom_name` fields with no `username`, causing `@undefined` in the UI. Added a normalization fallback in data extraction.
+- **Dead code removed** — `SearchBar` component (never imported), `formatters.ts` (no callers), `clickCount` debug state, unused starter assets, and the `react-beautiful-dnd` dependency (deprecated, never used, peer conflict with React 19).
+
+### UI/UX redesign
+
+The original UI was a bare layout with gray borders. The redesign uses a slate/indigo color system with white cards, rounded corners, and consistent shadows. Platform badges are color-coded (pink for Instagram, red for YouTube, cyan for TikTok). The header is sticky with a backdrop blur and a shortlist counter badge. The shortlist slides in from the right as a drawer. All interactive elements have hover, focus, and active states. The layout is responsive from mobile to desktop.
+
+### State management with Zustand
+
+Five Zustand stores handle all application state:
+
+| Store | Purpose |
 |---|---|
-| **Case-sensitive username search** — `p.username.includes(query)` was case-sensitive while fullname was case-insensitive | Normalize both username and fullname to lowercase in `filterProfiles` |
-| **Wrong engagement value displayed** — `ProfileDetailPage` used `formatEngagementRate()` to display the engagements count stat | Display actual engagements count with `formatFollowersDetail()` |
-| **Race condition in profile detail** — `loaded` state wasn't reset when navigating between profiles, causing stale data flash | Reset state on username change; added cleanup flag to ignore stale async responses |
-| **Dead `SearchBar` component** — existed but never imported; `PlatformFilter` had its own search input | Removed; split into `PlatformFilter` (tabs only) + `SearchInput` (standalone) |
-| **Debug `clickCount` state** — tracked clicks in `SearchPage` with no functional purpose | Removed; state management moved to Zustand store |
-| **Unused `react-beautiful-dnd`** — installed but never used, and deprecated for React 19 | Removed from dependencies |
+| `searchStore` | Platform filter and search query |
+| `shortlistStore` | Shortlisted profiles, persisted to localStorage |
+| `uiStore` | Shortlist panel visibility |
+| `themeStore` | Light/dark/system theme, persisted to localStorage |
+| `toastStore` | Toast notification queue |
 
-### 2. UI/UX Redesign
+The assignment mentioned replacing React Context with Zustand. The starter used local `useState` in components rather than Context, but the same architectural reasoning applies — extract shared state into stores with proper separation of concerns.
 
-- **Design system**: Clean slate-50 background, white cards, indigo accent color, consistent rounded corners and shadows
-- **Platform badges**: Color-coded pills per platform (pink/Instagram, red/YouTube, cyan/TikTok)
-- **Sticky header**: Backdrop-blurred header with shortlist counter badge
-- **Profile cards**: Full-width cards with hover states, accessible keyboard navigation, loading states
-- **Shortlist panel**: Slide-in drawer from the right with per-item remove and "clear all"
-- **Responsive**: Mobile-first with breakpoints for tablet and desktop
-- **Accessibility**: `aria-label` on all interactive elements, `role="button"` with keyboard handlers, semantic HTML, loading spinners for async operations
+### Add to List feature
 
-### 3. State Management — Zustand
+The disabled "Add to List" button is now fully implemented:
 
-Three Zustand stores replace what would have been React Context:
+- Add profiles from search cards or the profile detail page
+- Remove individual profiles from the shortlist panel or by clicking the "Added" state on a card
+- Duplicate prevention by `user_id`
+- Persists across page refreshes via localStorage
+- Slide-out panel accessible from the header
+- Clear all with one click
+- Toast notifications on add/remove
 
-- **`searchStore`** — platform filter + search query
-- **`shortlistStore`** — shortlisted profiles with `zustand/middleware/persist` to `localStorage` (survives page refresh)
-- **`uiStore`** — shortlist panel open/close toggle
+### Code quality
 
-### 4. Add to List Feature
+- `src/store/` for Zustand stores, `src/utils/` for pure helpers, `src/hooks/` for custom hooks, `src/test/` for tests
+- `PlatformFilter` handles tab selection only; `SearchInput` is a standalone search field — each has a single responsibility
+- Platform color/label/icon configuration centralized in `platformConfig.ts`
+- All components fully typed with no `any` types
+- Image error fallbacks render an SVG placeholder with the profile's initial instead of a broken image icon
 
-- **Add** profiles from search cards or profile detail page
-- **Remove** individual profiles from the shortlist panel or by clicking "Added" on a card
-- **Prevent duplicates** — store checks `user_id` before adding
-- **Persist** across page refreshes via `localStorage`
-- **View** shortlisted profiles in a slide-out panel (click "Shortlist" in the header)
-- **Clear all** — one-click bulk remove
+### Performance
 
-### 5. Code Quality Improvements
-
-- **Folder structure**: `src/store/` for Zustand stores, `src/components/` organized by concern
-- **Separation of concerns**: `PlatformFilter` (tabs only), `SearchInput` (search only), `VerifiedBadge` (reusable), `ShortlistPanel` (self-contained)
-- **Platform config**: Centralized color/label/icon map in `platformConfig.ts` instead of inline switch logic
-- **TypeScript**: All components fully typed; no `any` types; strict `verbatimModuleSyntax` respected
-
-### 6. Performance Optimizations
-
-- **Code splitting**: `ProfileDetailPage` lazy-loaded with `React.lazy` + `Suspense`
-- **`React.memo`** on `ProfileCard` to skip re-renders when props haven't changed
-- **`useMemo`** on filtered/all profile arrays in `SearchPage`
-- **`useCallback`** on the shortlist toggle handler in `ProfileDetailPage`
-- **`loading="lazy"`** on profile images
+- `ProfileDetailPage` is lazy-loaded with `React.lazy` + `Suspense`, producing a separate chunk
+- `ProfileCard` is wrapped in `React.memo` to skip re-renders when props are unchanged
+- `useMemo` on the filtered/all profiles computation in `SearchPage`
+- `useCallback` on the shortlist toggle handler in `ProfileDetailPage`
+- `loading="lazy"` on all profile images
 
 ---
 
-## Libraries Added
+## Libraries
 
-| Library | Purpose |
-|---|---|
-| `zustand` | State management with built-in `persist` middleware for localStorage |
-| `lucide-react` | Tree-shakeable icon library (Search, Plus, Check, X, ArrowLeft, etc.) |
-| `framer-motion` | Animation primitives (installed, available for future micro-interactions) |
+| Library | Category | Purpose |
+|---|---|---|
+| `zustand` | State management | Stores with built-in `persist` middleware for localStorage |
+| `lucide-react` | Icons | Tree-shakeable icon components |
+| `framer-motion` | Animation | Available for micro-interactions |
 
-## Libraries Removed
-
-| Library | Reason |
-|---|---|
-| `react-beautiful-dnd` | Deprecated; peer dependency conflict with React 19; never used in the app |
+Removed from the starter: `react-beautiful-dnd` (deprecated, peer conflict with React 19, never used).
 
 ---
 
 ## Assumptions
 
-- **JSON data is static** — search results and profile details are loaded from bundled JSON files (`import.meta.glob`). No API calls needed.
-- **Single shortlist** — one flat list. No multiple named lists per the assignment scope.
-- **Platform for shortlisted profiles** — when navigating from the shortlist panel, platform defaults to Instagram in the URL since the shortlist doesn't store the originating platform (profiles can exist on multiple platforms, but the detail page only uses platform for display).
-- **Tailwind v4** — the starter uses Tailwind v4 with `@import "tailwindcss"` syntax (CSS-first config, no `tailwind.config.js`).
+- **Static data** — all profiles and search results are bundled JSON files loaded via static import and `import.meta.glob`. No API server is required.
+- **Single shortlist** — one flat list, matching the assignment scope. Multiple named lists would add complexity without clear benefit.
+- **Platform on shortlist navigation** — the shortlist panel doesn't store which platform a profile came from, so navigating to a shortlisted profile defaults to Instagram in the URL. The detail page uses platform only for display purposes.
+- **Tailwind v4** — the project uses the CSS-first configuration syntax (`@import "tailwindcss"`).
 
 ---
 
 ## Trade-offs
 
-- **No test suite** — prioritizing feature completeness over test coverage within the deadline. Would add Vitest + React Testing Library with more time.
-- **No deployment** — the app runs locally. Deploying to Vercel/Netlify would be straightforward (the build output is a static SPA).
-- **Single shortlist** — the assignment asks for "a selected list"; I implemented one list. Multi-list support would add complexity without clear benefit.
-- **Framer-motion installed but lightly used** — the slide-in animation uses a CSS keyframe instead of framer-motion's `AnimatePresence` to keep the bundle smaller. Framer-motion is available for future polish.
-- **No dark mode toggle** — the redesign uses a light theme. The original had `prefers-color-scheme: dark` support which I replaced rather than extended to save time.
+- **Test coverage over breadth** — 19 tests cover the store logic, data helpers, and a component smoke test. End-to-end tests were deferred in favor of feature completeness within the deadline.
+- **CSS animation over framer-motion for the panel** — the shortlist slide-in uses a CSS keyframe to keep the bundle smaller. Framer-motion is installed and available for future micro-interactions.
+- **Class-based dark mode** — Tailwind v4 defaults to `prefers-color-scheme`, but a manual toggle requires class-based strategy. This adds a small CSS directive but gives users explicit control.
+- **Local state over server state** — the assignment data is static JSON, so libraries like TanStack Query or SWR weren't needed. The Zustand stores are designed to be straightforward to adapt if the data layer moves to an API.
 
 ---
 
-## Remaining Improvements (with more time)
+## Remaining Improvements
 
-- [ ] Add unit tests (Vitest + React Testing Library)
-- [ ] Add end-to-end tests (Playwright)
-- [ ] Deploy to Vercel or Netlify
-- [ ] Add framer-motion micro-interactions (staggered list animations, page transitions)
-- [ ] Add dark mode toggle (not just `prefers-color-scheme`)
-- [ ] Add fuzzy search (Fuse.js) for better profile discovery
-- [ ] Add toast notifications for add/remove actions
-- [ ] Add drag-to-reorder in the shortlist panel
-- [ ] Add empty state illustrations
+- [ ] End-to-end tests with Playwright
+- [ ] Framer-motion staggered list animations and page transitions
+- [ ] Fuzzy search (Fuse.js) for typo-tolerant profile discovery
+- [ ] Drag-to-reorder in the shortlist panel
+- [ ] Empty state illustrations
